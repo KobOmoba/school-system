@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function hasRole(role) {
+      return request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin') || hasRole('commander') || hasRole('agent');
+    }
+
+    match /schools/{schoolId} {
+      allow create: if hasRole('agent') && request.resource.data.agentId == request.auth.uid;
+      allow read, update: if hasRole('agent') && resource.data.agentId == request.auth.uid;
+      allow read, update: if hasRole('commander');
+      allow read, update: if hasRole('admin') && resource.data.schoolId == resource.id;
+
+      match /ledgerScans/{scanId} {
+        allow create, read: if hasRole('agent') || hasRole('commander');
+      }
+
+      match /schoolData/{dataId} {
+        allow read, write: if hasRole('agent') || hasRole('commander') || hasRole('admin');
+      }
+    }
+
+    match /students/{studentId} {
+      allow read: if request.auth.uid == resource.data.userId;
+      allow read, write: if hasRole('admin') && resource.data.schoolId == request.auth.token.schoolId;
+      allow read: if hasRole('commander');
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      allow read: if hasRole('commander');
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if request.auth.uid == resource.data.studentId || hasRole('admin');
+      allow write: if hasRole('admin') && request.auth.token.schoolId == resource.data.schoolId;
+    }
+
+    match /fees/{feeId} {
+      allow read: if request.auth.uid == resource.data.studentId || hasRole('admin');
+      allow write: if hasRole('admin') && request.auth.token.schoolId == resource.data.schoolId;
+    }
+
+    match /grades/{gradeId} {
+      allow read: if request.auth.uid == resource.data.studentId || hasRole('admin');
+      allow write: if hasRole('admin') && request.auth.token.schoolId == resource.data.schoolId;
+    }
+  }
+}
