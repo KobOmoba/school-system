@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Ledger images - agents can upload, commanders can read
+    match /ledger-images/{schoolId}/{allPaths=**} {
+      allow create: if request.auth.token.role == 'agent';
+      allow read: if request.auth.token.role in ['agent', 'commander'];
+      allow delete: if request.auth.token.role == 'commander';
+    }
+
+    // School documents
+    match /school-documents/{schoolId}/{allPaths=**} {
+      allow read, write: if request.auth.token.role == 'admin' && 
+                            request.auth.token.schoolId == schoolId;
+      allow read: if request.auth.token.role == 'commander';
+    }
+
+    // Student documents
+    match /student-documents/{studentId}/{allPaths=**} {
+      allow read, write: if request.auth.uid == studentId;
+      allow read, write: if request.auth.token.role == 'admin';
+    }
+  }
+}
