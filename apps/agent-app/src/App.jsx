@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@shared/hooks/useAuth';
 import Login from './pages/Login';
-import Onboarding from './pages/Onboarding';
+import RealtimeOnboarding from './pages/RealtimeOnboarding';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -31,7 +31,7 @@ function App() {
           path="/onboarding"
           element={
             <ProtectedRoute>
-              <Onboarding />
+              <RealtimeOnboarding />
             </ProtectedRoute>
           }
         />
