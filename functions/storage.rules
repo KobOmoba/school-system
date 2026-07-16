@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /ledger-images/{schoolId}/{allPaths=**} {
+      allow create: if request.auth.token.role == 'agent';
+      allow read: if request.auth.token.role in ['agent', 'commander'];
+      allow delete: if request.auth.token.role == 'commander';
+    }
+  }
+}
